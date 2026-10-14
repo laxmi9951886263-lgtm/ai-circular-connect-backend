@@ -41,7 +41,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of(
-            "https://ai-circular-connect-frontend.onrender.com"
+            "https://ai-circular-connect-frontend.vercel.app"
         ));
 
         config.setAllowedMethods(List.of(
@@ -92,3 +92,4 @@ public class SecurityConfig {
         return http.build();
     }
 }
+
