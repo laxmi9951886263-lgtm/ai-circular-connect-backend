@@ -87,7 +87,7 @@ public class ImageClassifierService {
 
         String response = client.post()
             .uri("https://generativelanguage.googleapis.com/v1beta/"
-               + "models/gemini-3.6-flash:generateContent")
+               + "models/gemini-1.5-flash:generateContent")
             .header("x-goog-api-key", apiKey)
             .contentType(MediaType.APPLICATION_JSON)
             .body(request)
