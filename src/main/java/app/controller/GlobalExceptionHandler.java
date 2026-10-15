@@ -70,8 +70,23 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleGeneral(
             Exception exception) {
 
+        // Log the real cause for server-side debugging
+        exception.printStackTrace();
+
+        // Give a more specific message for DB connectivity issues
+        String message = "An unexpected error occurred. Please try again.";
+        String exMsg = exception.getMessage();
+        if (exMsg != null && (
+                exMsg.contains("Connection") ||
+                exMsg.contains("datasource") ||
+                exMsg.contains("FATAL") ||
+                exMsg.contains("JPA") ||
+                exMsg.contains("hibernate"))) {
+            message = "Database connection error. Please try again later.";
+        }
+
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "An unexpected error occurred. Please try again."));
+                .body(Map.of("message", message));
     }
 }
