@@ -40,19 +40,28 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of(
-            "https://ai-circular-connect-frontend.vercel.app"
+        // Wildcard pattern covers all Vercel preview URLs + production + local dev
+        config.setAllowedOriginPatterns(List.of(
+            "https://*.vercel.app",
+            "http://localhost:5173",
+            "http://localhost:4173",
+            "http://localhost:3000"
         ));
 
         config.setAllowedMethods(List.of(
             "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
         ));
 
-        config.setAllowedHeaders(List.of(
-            "Authorization", "Content-Type", "Accept"
-        ));
+        // Allow all headers so multipart/form-data uploads and JWT auth both work
+        config.setAllowedHeaders(List.of("*"));
+
+        // Expose Authorization header to the browser
+        config.setExposedHeaders(List.of("Authorization"));
 
         config.setAllowCredentials(false);
+
+        // Cache preflight response for 1 hour
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
@@ -61,13 +70,14 @@ public class SecurityConfig {
         return source;
     }
 
-    
     @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http) throws Exception {
+            HttpSecurity http,
+            CorsConfigurationSource corsConfigurationSource) throws Exception {
 
         http
-            .cors(cors -> {})
+            // Explicitly wire our corsConfigurationSource bean
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(csrf -> csrf.disable())
             .httpBasic(basic -> basic.disable())
             .formLogin(form -> form.disable())
@@ -80,6 +90,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/items/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/classifier/**").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/items/**").authenticated()
                 .anyRequest().authenticated()
@@ -92,4 +103,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-
